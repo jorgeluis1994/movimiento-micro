@@ -58,10 +58,10 @@ public class MovimientoService {
 
         Movimiento nuevo = movimientoRepository.save(movimiento);
 
-        // 👇 Conversión manual de entidad a DTO
+      
         MovimientoDTO dto = new MovimientoDTO(
                 nuevo.getId(),
-                nuevo.getTipoMovimiento(), // usa el campo de tu entidad
+                nuevo.getTipoMovimiento(), 
                 nuevo.getValor());
 
         // Publicar evento en RabbitMQ

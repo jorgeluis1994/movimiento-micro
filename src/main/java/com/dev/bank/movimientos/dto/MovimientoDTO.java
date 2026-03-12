@@ -1,8 +1,7 @@
 package com.dev.bank.movimientos.dto;
 
-import java.io.Serializable;
 
-public class MovimientoDTO implements Serializable {
+public class MovimientoDTO  {
     private Long id;
     private String tipoMovimiento;
     private Double valor;
