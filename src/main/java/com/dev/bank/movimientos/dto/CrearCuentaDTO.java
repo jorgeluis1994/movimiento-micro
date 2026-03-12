@@ -9,5 +9,5 @@ public class CrearCuentaDTO {
     private String tipoCuenta;
     private BigDecimal saldoInicial;
     private Boolean estado;
-    private String nombreCliente; // Aquí recibes "Jose Lema" o "Marianela Montalvo"
+    private String nombreCliente; 
 }

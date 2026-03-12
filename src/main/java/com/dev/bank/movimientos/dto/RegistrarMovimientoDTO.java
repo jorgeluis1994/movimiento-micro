@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RegistrarMovimientoDTO {
-    private String numeroCuenta; // "478758"
-    private String tipoMovimiento; // "Retiro" o "Deposito"
-    private Double valor; // 575.0
+    private String numeroCuenta; 
+    private String tipoMovimiento; 
+    private Double valor; 
 }
