@@ -7,11 +7,11 @@ public class MovimientoDTO  {
     private Double valor;
     private Double saldo;
 
-    // Constructor vacío (necesario para deserialización)
+    
     public MovimientoDTO() {
     }
 
-    // Constructor con parámetros
+   
     public MovimientoDTO(Long id, String tipoMovimiento, Double valor, Double saldo) {
         this.id = id;
         this.tipoMovimiento = tipoMovimiento;
