@@ -15,4 +15,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
 
     // Buscar movimientos por rango de fechas
     List<Movimiento> findByFechaBetween(LocalDate inicio, LocalDate fin);
+
+    
 }
