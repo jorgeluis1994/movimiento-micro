@@ -1,11 +1,15 @@
 package com.dev.bank.movimientos.controllers;
 
+import com.dev.bank.movimientos.dto.EstadoCuentaDTO;
 import com.dev.bank.movimientos.dto.RegistrarMovimientoDTO;
 import com.dev.bank.movimientos.models.Movimiento;
 import com.dev.bank.movimientos.services.MovimientoService;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -45,4 +49,13 @@ public class MovimientoController {
         movimientoService.eliminarMovimiento(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/reportes")
+    public ResponseEntity<List<EstadoCuentaDTO>> obtenerReporte(
+            @RequestParam Long clienteId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        return ResponseEntity.ok(movimientoService.generarReporte(clienteId, inicio, fin));
+    }
+
 }

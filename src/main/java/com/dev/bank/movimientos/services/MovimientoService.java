@@ -2,8 +2,10 @@ package com.dev.bank.movimientos.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import com.dev.bank.movimientos.dto.RegistrarMovimientoDTO; // Tu nuevo DTO
+import com.dev.bank.movimientos.dto.EstadoCuentaDTO;
 import com.dev.bank.movimientos.dto.MovimientoDTO; // El DTO para RabbitMQ
 import com.dev.bank.movimientos.exceptions.SaldoNoDisponibleException;
 import com.dev.bank.movimientos.models.Cuenta;
@@ -13,21 +15,27 @@ import com.dev.bank.movimientos.repository.CuentaRepository;
 import com.dev.bank.movimientos.repository.MovimientoRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MovimientoService {
 
-    private final MovimientoRepository movimientoRepository;
+   private final MovimientoRepository movimientoRepository;
     private final CuentaRepository cuentaRepository;
     private final MovimientoPublisher movimientoPublisher;
+    private final RestTemplate restTemplate; // <--- 1. DECLARARLO AQUÍ
 
+    // 2. AGREGARLO AL CONSTRUCTOR
     public MovimientoService(MovimientoRepository movimientoRepository,
             CuentaRepository cuentaRepository,
-            MovimientoPublisher movimientoPublisher) {
+            MovimientoPublisher movimientoPublisher,
+            RestTemplate restTemplate) { // <--- INYECTAR AQUÍ
         this.movimientoRepository = movimientoRepository;
         this.cuentaRepository = cuentaRepository;
         this.movimientoPublisher = movimientoPublisher;
+        this.restTemplate = restTemplate; // <--- ASIGNAR AQUÍ
     }
 
     public List<Movimiento> listarMovimientos() {
@@ -93,4 +101,44 @@ public class MovimientoService {
     public void eliminarMovimiento(Long id) {
         movimientoRepository.deleteById(id);
     }
+
+    public List<EstadoCuentaDTO> generarReporte(Long clienteId, LocalDate inicio, LocalDate fin) {
+        // 1. Traer el nombre del cliente desde el otro micro (puerto 4000)
+        String url = "http://localhost:4000/clientes/" + clienteId;
+        String nombreCliente;
+        try {
+            // Obtenemos el objeto y extraemos el nombre
+            Map<String, Object> cliente = restTemplate.getForObject(url, Map.class);
+            nombreCliente = cliente.get("nombre").toString();
+        } catch (Exception e) {
+            nombreCliente = "Cliente Desconocido"; // Fallback por si el micro de clientes está caído
+        }
+
+        // 2. Buscamos todas las cuentas de este cliente
+        List<Cuenta> cuentas = cuentaRepository.findByClienteId(clienteId);
+        List<EstadoCuentaDTO> reporte = new ArrayList<>();
+
+        for (Cuenta cuenta : cuentas) {
+            // 3. Buscamos los movimientos por rango de fechas
+            List<Movimiento> movimientos = movimientoRepository.findByCuentaIdAndFechaBetween(cuenta.getId(), inicio,
+                    fin);
+
+            for (Movimiento mov : movimientos) {
+                // Saldo inicial = saldo después del movimiento - el valor que se movió
+                Double saldoInicialCalculado = mov.getSaldo() - mov.getValor();
+
+                reporte.add(new EstadoCuentaDTO(
+                        mov.getFecha(),
+                        nombreCliente, // <--- Ahora es dinámico
+                        cuenta.getNumeroCuenta(),
+                        cuenta.getTipoCuenta(),
+                        saldoInicialCalculado,
+                        cuenta.getEstado(),
+                        mov.getValor(),
+                        mov.getSaldo()));
+            }
+        }
+        return reporte;
+    }
+
 }
