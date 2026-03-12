@@ -9,7 +9,7 @@ import com.dev.bank.movimientos.models.Cuenta;
 
 @Repository
 public interface CuentaRepository extends JpaRepository<Cuenta, Long> {
-    // Ejemplo de query adicional si lo necesitas
+    
     Cuenta findByNumeroCuenta(String numeroCuenta);
     List<Cuenta> findByClienteId(Long clienteId);
 }
